@@ -1,12 +1,13 @@
 {
-  "compilerOptions": {
-    "target": "es2020",
-    "module": "es2022",
-    "moduleResolution": "node",
-    "outDir": "./dist",
-    "esModuleInterop": true,
-    "forceConsistentCasingInFileNames": true,
-    "strict": true,
-    "skipLibCheck": true
-  }
+ "compilerOptions": {
+   "module": "ESNext",
+   "moduleResolution": "bundler",
+   "target": "ES2023",
+   "outDir": "./dist",
+   "strict": true,
+   "esModuleInterop": true,
+   "forceConsistentCasingInFileNames": true,
+   "ignoreDeprecations": "6.0",
+   "skipLibCheck": true
+ }
 }
