@@ -1,0 +1,31 @@
+{
+  "name": "back-end",
+  "version": "0.0.1",
+  "private": true,
+  "scripts": {
+    "dev": "tsx watch ./src/bin/server",
+    "start": "node ./dist/bin/server.js",
+    "build": "rimraf dist && npx tsc",
+    "postbuild": "copyfiles -u 1 src/views/*.null dist",
+    "prestart": "npm run build"
+  },
+  "dependencies": {
+    "chalk": "^5.6.2",
+    "cookie-parser": "^1.4.7",
+    "express": "^5.1.0",
+    "morgan": "^1.10.1"
+  },
+  "devDependencies": {
+    "@types/cookie-parser": "^1.4.10",
+    "@types/express": "^5.0.5",
+    "@types/morgan": "^1.9.10",
+    "@types/node": "^24.10.0",
+    "copyfiles": "^2.4.1",
+    "eslint": "^9.39.0",
+    "prettier": "^3.6.2",
+    "rimraf": "^6.1.0",
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
+  },
+  "type": "module"
+}
