@@ -19,6 +19,23 @@ Content-Type: {{contentType}}
 ###
 @patientId = {{createPatient.response.body.id}}
 
+### Cadastra um segundo paciente, usado no teste de troca de paciente - 201
+# @name createOtherPatient
+POST {{baseUrl}}/patients
+Content-Type: {{contentType}}
+
+{
+  "name": "Ana",
+  "birthDate": "1995-11-22T00:00:00.000Z",
+  "gender": "Feminino",
+  "biologicalSex": "FEMININO",
+  "cpf": "862.883.667-57",
+  "phone": "(21) 91111-2222"
+}
+
+###
+@otherPatientId = {{createOtherPatient.response.body.id}}
+
 ### Cadastra uma avaliação corporal - 201 
 # @name createAssessment
 POST {{baseUrl}}/body-assessments
@@ -63,6 +80,29 @@ Content-Type: {{contentType}}
 {
   "weight": 81.9,
   "activityLevel": "LIGEIRAMENTE_ATIVO"
+}
+
+### Tenta mover a avaliação para outro paciente - 200 (apenas o weight é alterado, patientId permanece)
+PUT {{baseUrl}}/body-assessments/{{assessmentId}}
+Content-Type: {{contentType}}
+
+{
+  "patientId": {{otherPatientId}},
+  "weight": 81.5
+}
+
+### Confirma que a avaliação continua ligada ao primeiro paciente - 200
+GET {{baseUrl}}/body-assessments/{{assessmentId}}
+
+### Confirma que o segundo paciente não recebeu a avaliação - 200
+GET {{baseUrl}}/body-assessments/patient/{{otherPatientId}}
+
+### Tenta mover a avaliação para um paciente inexistente - 200 (patientId é ignorado)
+PUT {{baseUrl}}/body-assessments/{{assessmentId}}
+Content-Type: {{contentType}}
+
+{
+  "patientId": 123
 }
 
 ### Tenta cadastrar outra avaliação do mesmo paciente na mesma data - erro
@@ -121,3 +161,6 @@ DELETE {{baseUrl}}/patients/{{patientId}}
 
 ### Confirma o cascade: não deve restar avaliação deste paciente
 GET {{baseUrl}}/body-assessments
+
+### Exclui o segundo paciente - 204
+DELETE {{baseUrl}}/patients/{{otherPatientId}}

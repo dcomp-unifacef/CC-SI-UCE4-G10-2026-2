@@ -4,6 +4,7 @@ import type { Patient } from "../../generated/prisma/client"
 import type { CreatePatientDto } from "../dto/patient/createPatientDto"
 import type { UpdatePatientDto } from "../dto/patient/updatePatientDto"
 
+import { AppError } from "../errors/AppError"
 import { NotFoundError } from "../errors/NotFoundError"
 
 // Mantém apenas os dígitos do CPF, para que "000.000.000-00" e "00000000000" sejam o mesmo valor
@@ -12,6 +13,9 @@ function normalizeCpf(cpf: string): string {
 }
 
 export async function create(data:CreatePatientDto): Promise<Patient> {
+    // Regra de negócio: o paciente é cadastrado sem avaliações; elas são ligadas depois, em POST /body-assessments
+    if ("assessments" in data) throw new AppError("Não é possível cadastrar um paciente com avaliações. Cadastre o paciente e depois registre as avaliações.", 400);
+
     return repository.create({ ...data, cpf: normalizeCpf(data.cpf) })
 }
 
