@@ -12,6 +12,14 @@ datasource db {
   provider = "postgresql"
 }
 
+enum ActivityLevel {
+  SEDENTARIO            // 1.200
+  LIGEIRAMENTE_ATIVO    // 1.375
+  MODERADAMENTE_ATIVO   // 1.550
+  MUITO_ATIVO           // 1.725
+  EXTREMAMENTE_ATIVO    // 1.900
+}
+
 enum BiologicalSex {
   MASCULINO
   FEMININO
@@ -28,4 +36,22 @@ model Patient {
 
   createdAt         DateTime        @default(now()) @map("created_at")
   updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  assessments       BodyAssessment[]
+}
+
+model BodyAssessment {
+  id                Int             @id @default(autoincrement())
+  assessmentDate    DateTime        @db.Date @map("assessment_date")
+  weight            Decimal         @db.Decimal(5, 2)
+  height            Decimal         @db.Decimal(3, 2)
+  activityLevel     ActivityLevel   @map("activity_level")
+
+  patientId         Int             @map("patient_id")
+  patient           Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+  
+  createdAt         DateTime        @default(now()) @map("created_at")
+  updatedAt         DateTime        @updatedAt @map("updated_at")
+
+  @@unique([patientId, assessmentDate])
 }
