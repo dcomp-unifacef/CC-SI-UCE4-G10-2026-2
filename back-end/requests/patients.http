@@ -1,0 +1,84 @@
+# Testes das rotas de Pacientes
+@baseUrl = http://localhost:8888
+@contentType = application/json
+
+### Cadastra um paciente (CPF com máscara, deve ser salvo só com dígitos) - 201
+# @name createPatient
+POST {{baseUrl}}/patients
+Content-Type: {{contentType}}
+
+{
+  "name": "Marina",
+  "birthDate": "1990-05-15T00:00:00.000Z",
+  "gender": "Feminino",
+  "biologicalSex": "FEMININO",
+  "cpf": "529.982.247-25",
+  "phone": "(11) 98765-4321"
+}
+
+###
+@patientId = {{createPatient.response.body.id}}
+
+### Lista todos os pacientes, ordenados por nome - 200
+GET {{baseUrl}}/patients
+
+### Busca o paciente cadastrado pelo id - 200
+GET {{baseUrl}}/patients/{{patientId}}
+
+### Atualiza parcialmente o paciente - 200
+PUT {{baseUrl}}/patients/{{patientId}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Marina",
+  "phone": "(11) 91234-5678"
+}
+
+### Tenta cadastrar o mesmo CPF sem máscara - erro (CPF duplicado)
+POST {{baseUrl}}/patients
+Content-Type: {{contentType}}
+
+{
+  "name": "Outra Pessoa",
+  "birthDate": "1985-01-20T00:00:00.000Z",
+  "gender": "Masculino",
+  "biologicalSex": "MASCULINO",
+  "cpf": "52998224725",
+  "phone": "(11) 90000-0000"
+}
+
+### Tenta cadastrar com valor inválido no enum biologicalSex - erro
+POST {{baseUrl}}/patients
+Content-Type: {{contentType}}
+
+{
+  "name": "Pessoa Inválida",
+  "birthDate": "1985-01-20T00:00:00.000Z",
+  "gender": "Masculino",
+  "biologicalSex": "OUTRO",
+  "cpf": "111.444.777-35",
+  "phone": "(11) 90000-0000"
+}
+
+### Busca um paciente inexistente - 404
+GET {{baseUrl}}/patients/123
+
+### Busca com id que não é número - erro
+GET {{baseUrl}}/patients/abc
+
+### Atualiza um paciente inexistente - 404
+PUT {{baseUrl}}/patients/123
+Content-Type: {{contentType}}
+
+{
+  "name": "teste"
+}
+
+### Exclui o paciente (e suas avaliações, por cascade) - 204
+DELETE {{baseUrl}}/patients/{{patientId}}
+
+### Confirma a exclusão - 404
+GET {{baseUrl}}/patients/{{patientId}}
+
+### Exclui um paciente inexistente - 404
+DELETE {{baseUrl}}/patients/999999

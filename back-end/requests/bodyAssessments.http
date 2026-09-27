@@ -1,0 +1,123 @@
+# Testes das rotas de Avaliações Corporais
+@baseUrl = http://localhost:8888
+@contentType = application/json
+
+### Cadastra um paciente para associar as avaliações - 201
+# @name createPatient
+POST {{baseUrl}}/patients
+Content-Type: {{contentType}}
+
+{
+  "name": "João",
+  "birthDate": "1988-03-10T00:00:00.000Z",
+  "gender": "Masculino",
+  "biologicalSex": "MASCULINO",
+  "cpf": "111.444.777-35",
+  "phone": "(21) 99876-5432"
+}
+
+###
+@patientId = {{createPatient.response.body.id}}
+
+### Cadastra uma avaliação corporal - 201 
+# @name createAssessment
+POST {{baseUrl}}/body-assessments
+Content-Type: {{contentType}}
+
+{
+  "patientId": {{patientId}},
+  "assessmentDate": "2026-09-01T00:00:00.000Z",
+  "weight": 82.5,
+  "height": 1.78,
+  "activityLevel": "MODERADAMENTE_ATIVO"
+}
+
+###
+@assessmentId = {{createAssessment.response.body.id}}
+
+### Cadastra uma segunda avaliação do mesmo paciente, em outra data - 201
+POST {{baseUrl}}/body-assessments
+Content-Type: {{contentType}}
+
+{
+  "patientId": {{patientId}},
+  "assessmentDate": "2026-09-26T00:00:00.000Z",
+  "weight": 80.2,
+  "height": 1.78,
+  "activityLevel": "MUITO_ATIVO"
+}
+
+### Lista todas as avaliações, das mais recentes para as mais antigas - 200
+GET {{baseUrl}}/body-assessments
+
+### Lista as avaliações do paciente - 200
+GET {{baseUrl}}/body-assessments/patient/{{patientId}}
+
+### Busca a avaliação pelo id - 200
+GET {{baseUrl}}/body-assessments/{{assessmentId}}
+
+### Atualiza parcialmente a avaliação - 200
+PUT {{baseUrl}}/body-assessments/{{assessmentId}}
+Content-Type: {{contentType}}
+
+{
+  "weight": 81.9,
+  "activityLevel": "LIGEIRAMENTE_ATIVO"
+}
+
+### Tenta cadastrar outra avaliação do mesmo paciente na mesma data - erro
+POST {{baseUrl}}/body-assessments
+Content-Type: {{contentType}}
+
+{
+  "patientId": {{patientId}},
+  "assessmentDate": "2026-09-01T00:00:00.000Z",
+  "weight": 83.0,
+  "height": 1.78,
+  "activityLevel": "SEDENTARIO"
+}
+
+### Tenta cadastrar avaliação para paciente inexistente - 404
+POST {{baseUrl}}/body-assessments
+Content-Type: {{contentType}}
+
+{
+  "patientId": 999999,
+  "assessmentDate": "2026-09-01T00:00:00.000Z",
+  "weight": 70.0,
+  "height": 1.65,
+  "activityLevel": "SEDENTARIO"
+}
+
+### Tenta cadastrar com valor inválido no enum activityLevel - erro
+POST {{baseUrl}}/body-assessments
+Content-Type: {{contentType}}
+
+{
+  "patientId": {{patientId}},
+  "assessmentDate": "2026-08-01T00:00:00.000Z",
+  "weight": 70.0,
+  "height": 1.65,
+  "activityLevel": "ATLETA"
+}
+
+### Lista avaliações de paciente inexistente - 404
+GET {{baseUrl}}/body-assessments/patient/123
+
+### Busca uma avaliação inexistente - 404
+GET {{baseUrl}}/body-assessments/123
+
+### Busca com id que não é número - erro
+GET {{baseUrl}}/body-assessments/abc
+
+### Exclui a avaliação - 204
+DELETE {{baseUrl}}/body-assessments/{{assessmentId}}
+
+### Confirma a exclusão - 404
+GET {{baseUrl}}/body-assessments/{{assessmentId}}
+
+### Exclui o paciente; a avaliação restante é removida por cascade - 204
+DELETE {{baseUrl}}/patients/{{patientId}}
+
+### Confirma o cascade: não deve restar avaliação deste paciente
+GET {{baseUrl}}/body-assessments
