@@ -56,4 +56,3 @@ export function deleteById(id: number) {
     })
 
 }
-git add .
