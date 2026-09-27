@@ -6,8 +6,11 @@ import type { UpdatePatientDto } from "../dto/patient/updatePatientDto";
 
 // Crie um novo registro de paciente
 export function create(data: CreatePatientDto) {
+    // Repassa apenas os campos do DTO, impedindo que id, datas de controle ou avaliações sejam enviados
+    const { name, birthDate, gender, biologicalSex, cpf, phone } = data
+
     return prisma.patient.create({
-        data
+        data: { name, birthDate, gender, biologicalSex, cpf, phone }
     })
 }
 
@@ -33,9 +36,12 @@ export function findAll() {
 
 // Atualiza os dados de um paciente, buscando pelo id
 export function updateById(id: number, data: UpdatePatientDto) {
+    // Repassa apenas os campos do DTO, para que o id, as datas de controle e as avaliações não possam ser alterados diretamente
+    const { name, birthDate, gender, biologicalSex, cpf, phone } = data
+
     return prisma.patient.update({
         where: { id },
-        data
+        data: { name, birthDate, gender, biologicalSex, cpf, phone }
     })
 
 }

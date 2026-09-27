@@ -4,10 +4,18 @@ import type { CreateBodyAssessmentDto } from "../dto/bodyAssessment/createBodyAs
 
 import type { UpdateBodyAssessmentDto } from "../dto/bodyAssessment/updateBodyAssessmentDto";
 
-// Cria um novo registro de avaliação corporal
+// Cria um novo registro de avaliação corporal, ligando-o a um paciente já cadastrado
 export function create(data: CreateBodyAssessmentDto) {
+    const { patientId, assessmentDate, weight, height, activityLevel } = data
+
     return prisma.bodyAssessment.create({
-        data
+        data: {
+            assessmentDate,
+            weight,
+            height,
+            activityLevel,
+            patient: { connect: { id: patientId } }
+        }
     })
 }
 
@@ -42,9 +50,12 @@ export function findAllByPatientId(patientId: number) {
 
 // Atualiza os dados de uma avaliação corporal, buscando pelo id
 export function updateById(id: number, data: UpdateBodyAssessmentDto) {
+    // Repassa apenas os campos do DTO, para que o patientId não possa ser alterado
+    const { assessmentDate, weight, height, activityLevel } = data
+
     return prisma.bodyAssessment.update({
         where: { id },
-        data
+        data: { assessmentDate, weight, height, activityLevel }
     })
 
 }
