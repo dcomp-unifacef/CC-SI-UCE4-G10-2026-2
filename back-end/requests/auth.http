@@ -1,0 +1,34 @@
+# Testes das rotas de autenticação (extensão REST Client do VS Code)
+# Usuário criado pelo seed: npx prisma db seed
+
+@baseUrl = http://localhost:8888
+@contentType = application/json
+
+### Login com credenciais corretas -> 200 (token + dados do usuário)
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "nutri",
+  "password": "nutri123"
+}
+
+###
+@token = {{login.response.body.token}}
+
+### Dados do usuário logado -> 200
+GET {{baseUrl}}/auth/me
+Authorization: Bearer {{token}}
+
+### Senha incorreta -> 401
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "nutri",
+  "password": "senha-errada"
+}
+
+### Rota protegida sem token -> 401
+GET {{baseUrl}}/patients

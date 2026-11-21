@@ -2,9 +2,22 @@
 @baseUrl = http://localhost:8888
 @contentType = application/json
 
+### Faz login para obter o token (as demais rotas exigem "Authorization:
+Bearer <token>")
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+{
+"login": "nutri",
+"password": "nutri123"
+}
+###
+@token = {{login.response.body.token}}
+
 ### Cadastra um paciente (CPF com máscara, deve ser salvo só com dígitos) - 201
 # @name createPatient
 POST {{baseUrl}}/patients
+Authorization: Bearer {{token}}
 Content-Type: {{contentType}}
 
 {
@@ -21,12 +34,15 @@ Content-Type: {{contentType}}
 
 ### Lista todos os pacientes, ordenados por nome - 200
 GET {{baseUrl}}/patients
+Authorization: Bearer {{token}}
 
 ### Busca o paciente cadastrado pelo id - 200
 GET {{baseUrl}}/patients/{{patientId}}
+Authorization: Bearer {{token}}
 
 ### Atualiza parcialmente o paciente - 200
 PUT {{baseUrl}}/patients/{{patientId}}
+Authorization: Bearer {{token}}
 Content-Type: {{contentType}}
 
 {
@@ -36,6 +52,7 @@ Content-Type: {{contentType}}
 
 ### Tenta alterar id, createdAt e avaliações pelo update - 200 (apenas o phone é alterado)
 PUT {{baseUrl}}/patients/{{patientId}}
+Authorization: Bearer {{token}}
 Content-Type: {{contentType}}
 
 {
@@ -47,9 +64,11 @@ Content-Type: {{contentType}}
 
 ### Confirma que o id não foi alterado - 200
 GET {{baseUrl}}/patients/{{patientId}}
+Authorization: Bearer {{token}}
 
 ### Tenta cadastrar um paciente com avaliações aninhadas - 400 (paciente não é criado)
 POST {{baseUrl}}/patients
+Authorization: Bearer {{token}}
 Content-Type: {{contentType}}
 
 {
@@ -73,6 +92,7 @@ Content-Type: {{contentType}}
 
 ### Tenta cadastrar o mesmo CPF sem máscara - erro (CPF duplicado)
 POST {{baseUrl}}/patients
+Authorization: Bearer {{token}}
 Content-Type: {{contentType}}
 
 {
@@ -86,6 +106,7 @@ Content-Type: {{contentType}}
 
 ### Tenta cadastrar com valor inválido no enum biologicalSex - erro
 POST {{baseUrl}}/patients
+Authorization: Bearer {{token}}
 Content-Type: {{contentType}}
 
 {
@@ -99,12 +120,15 @@ Content-Type: {{contentType}}
 
 ### Busca um paciente inexistente - 404
 GET {{baseUrl}}/patients/123
+Authorization: Bearer {{token}}
 
 ### Busca com id que não é número - erro
 GET {{baseUrl}}/patients/abc
+Authorization: Bearer {{token}}
 
 ### Atualiza um paciente inexistente - 404
 PUT {{baseUrl}}/patients/123
+Authorization: Bearer {{token}}
 Content-Type: {{contentType}}
 
 {
@@ -113,9 +137,12 @@ Content-Type: {{contentType}}
 
 ### Exclui o paciente (e suas avaliações, por cascade) - 204
 DELETE {{baseUrl}}/patients/{{patientId}}
+Authorization: Bearer {{token}}
 
 ### Confirma a exclusão - 404
 GET {{baseUrl}}/patients/{{patientId}}
+Authorization: Bearer {{token}}
 
 ### Exclui um paciente inexistente - 404
 DELETE {{baseUrl}}/patients/999999
+Authorization: Bearer {{token}}

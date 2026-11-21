@@ -13,11 +13,11 @@ datasource db {
 }
 
 enum ActivityLevel {
-  SEDENTARIO            // 1.200
-  LIGEIRAMENTE_ATIVO    // 1.375
-  MODERADAMENTE_ATIVO   // 1.550
-  MUITO_ATIVO           // 1.725
-  EXTREMAMENTE_ATIVO    // 1.900
+  SEDENTARIO // 1.200
+  LIGEIRAMENTE_ATIVO // 1.375
+  MODERADAMENTE_ATIVO // 1.550
+  MUITO_ATIVO // 1.725
+  EXTREMAMENTE_ATIVO // 1.900
 }
 
 enum BiologicalSex {
@@ -26,32 +26,141 @@ enum BiologicalSex {
 }
 
 model Patient {
-  id                Int             @id @default(autoincrement())
-  name              String          @db.VarChar(120)
-  birthDate         DateTime        @map("birth_date") @db.Date
-  gender            String          @db.VarChar(40)
-  biologicalSex     BiologicalSex   @map("biological_sex")
-  cpf               String          @unique
-  phone             String          @db.VarChar(20)
+  id            Int           @id @default(autoincrement())
+  name          String        @db.VarChar(120)
+  birthDate     DateTime      @map("birth_date") @db.Date
+  gender        String        @db.VarChar(40)
+  biologicalSex BiologicalSex @map("biological_sex")
+  cpf           String        @unique
+  phone         String        @db.VarChar(20)
+  // Paciente em acompanhamento (Ativo) ou não (Inativo)
+  active        Boolean       @default(true)
 
-  createdAt         DateTime        @default(now()) @map("created_at")
-  updatedAt         DateTime        @updatedAt @map("updated_at")
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
-  assessments       BodyAssessment[]
+  assessments BodyAssessment[]
+  mealPlans   MealPlan[]
 }
 
 model BodyAssessment {
-  id                Int             @id @default(autoincrement())
-  assessmentDate    DateTime        @db.Date @map("assessment_date")
-  weight            Decimal         @db.Decimal(5, 2)
-  height            Decimal         @db.Decimal(3, 2)
-  activityLevel     ActivityLevel   @map("activity_level")
+  id             Int           @id @default(autoincrement())
+  assessmentDate DateTime      @map("assessment_date") @db.Date
+  weight         Decimal       @db.Decimal(5, 2)
+  height         Decimal       @db.Decimal(3, 2)
+  activityLevel  ActivityLevel @map("activity_level")
 
-  patientId         Int             @map("patient_id")
-  patient           Patient         @relation(fields: [patientId], references: [id], onDelete: Cascade, onUpdate: Cascade)
-  
-  createdAt         DateTime        @default(now()) @map("created_at")
-  updatedAt         DateTime        @updatedAt @map("updated_at")
+  patientId Int     @map("patient_id")
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
 
   @@unique([patientId, assessmentDate])
+}
+
+// Usuário do sistema (nutricionista) que acessa a aplicação pela tela de login
+model User {
+  id           Int     @id @default(autoincrement())
+  name         String  @db.VarChar(120)
+  login        String  @unique @db.VarChar(60)
+  // Senha guardada como hash (nunca em texto puro)
+  passwordHash String  @map("password_hash")
+  crn          String? @db.VarChar(30)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+}
+
+enum MeasureUnit {
+  G
+  ML
+}
+
+// Alimento do banco de alimentos; valores nutricionais referentes à porção informada
+model Food {
+  id            Int         @id @default(autoincrement())
+  name          String      @unique @db.VarChar(120)
+  // Quantidade da porção de referência (ex.: 100) e unidade (g ou ml)
+  portionAmount Decimal     @map("portion_amount") @db.Decimal(7, 2)
+  portionUnit   MeasureUnit @map("portion_unit")
+  // Descrição livre da porção (ex.: "1 unidade")
+  portionNote   String?     @map("portion_note") @db.VarChar(60)
+  calories      Decimal     @db.Decimal(7, 2)
+  protein       Decimal     @db.Decimal(6, 2)
+  carbohydrates Decimal     @db.Decimal(6, 2)
+  fat           Decimal     @db.Decimal(6, 2)
+  fiber         Decimal     @db.Decimal(6, 2)
+  // true para os alimentos da base padrão (seed); false para os cadastrados pela nutricionista
+  isDefault     Boolean     @default(false) @map("is_default")
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  mealItems MealItem[]
+}
+
+// Modelo de dieta (template reutilizável de plano alimentar)
+model Diet {
+  id    Int     @id @default(autoincrement())
+  name  String  @unique @db.VarChar(120)
+  notes String?
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  meals     Meal[]
+  mealPlans MealPlan[]
+}
+
+// Plano alimentar atribuído a um paciente. Pode ser criado a partir de um
+// modelo de dieta (as refeições são copiadas e podem ser ajustadas depois).
+model MealPlan {
+  id        Int      @id @default(autoincrement())
+  name      String   @db.VarChar(120)
+  startDate DateTime @map("start_date") @db.Date
+  notes     String?
+
+  patientId Int     @map("patient_id")
+  patient   Patient @relation(fields: [patientId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  // Modelo de dieta usado como base (opcional)
+  dietId Int?  @map("diet_id")
+  diet   Diet? @relation(fields: [dietId], references: [id], onDelete: SetNull, onUpdate: Cascade)
+
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  meals Meal[]
+}
+
+// Refeição de um modelo de dieta OU de um plano alimentar (ex.: 07:00 · Café da manhã)
+model Meal {
+  id       Int    @id @default(autoincrement())
+  name     String @db.VarChar(60)
+  // Horário no formato HH:MM
+  time     String @db.VarChar(5)
+  position Int    @default(0)
+
+  // Preenchido quando a refeição pertence a um modelo de dieta
+  dietId Int?  @map("diet_id")
+  diet   Diet? @relation(fields: [dietId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  // Preenchido quando a refeição pertence a um plano alimentar de paciente
+  mealPlanId Int?      @map("meal_plan_id")
+  mealPlan   MealPlan? @relation(fields: [mealPlanId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  items MealItem[]
+}
+
+// Alimento de uma refeição, com a quantidade em g ou ml (mesma unidade da porção do alimento)
+model MealItem {
+  id       Int     @id @default(autoincrement())
+  quantity Decimal @db.Decimal(7, 2)
+
+  mealId Int  @map("meal_id")
+  meal   Meal @relation(fields: [mealId], references: [id], onDelete: Cascade, onUpdate: Cascade)
+
+  foodId Int  @map("food_id")
+  food   Food @relation(fields: [foodId], references: [id], onDelete: Restrict, onUpdate: Cascade)
 }
