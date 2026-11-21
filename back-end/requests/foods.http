@@ -1,0 +1,80 @@
+# Testes das rotas de Alimentos (extensão REST Client do VS Code)
+# Execute as requisições em ordem: os ids são capturados das respostas anteriores.
+
+@baseUrl = http://localhost:8888
+@contentType = application/json
+
+### Faz login para obter o token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "nutri",
+  "password": "nutri123"
+}
+
+###
+@token = {{login.response.body.token}}
+
+### Cadastra um alimento (valores por porção) -> 201
+# @name createFood
+POST {{baseUrl}}/foods
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Tapioca",
+  "portionAmount": 50,
+  "portionUnit": "G",
+  "portionNote": "1 unidade média",
+  "calories": 120,
+  "protein": 0,
+  "carbohydrates": 29,
+  "fat": 0,
+  "fiber": 0.5
+}
+
+###
+@foodId = {{createFood.response.body.id}}
+
+### Lista todos os alimentos, em ordem alfabética -> 200
+GET {{baseUrl}}/foods
+Authorization: Bearer {{token}}
+
+### Busca o alimento pelo id -> 200
+GET {{baseUrl}}/foods/{{foodId}}
+Authorization: Bearer {{token}}
+
+### Atualiza parcialmente o alimento -> 200
+PUT {{baseUrl}}/foods/{{foodId}}
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "calories": 115
+}
+
+### Tenta cadastrar um nome repetido -> 409
+POST {{baseUrl}}/foods
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Tapioca",
+  "portionAmount": 100,
+  "portionUnit": "G",
+  "calories": 240,
+  "protein": 0,
+  "carbohydrates": 58,
+  "fat": 0,
+  "fiber": 1
+}
+
+### Exclui o alimento -> 204
+DELETE {{baseUrl}}/foods/{{foodId}}
+Authorization: Bearer {{token}}
+
+### Tenta excluir um alimento usado em um modelo de dieta (base padrão, id 1) -> 409
+DELETE {{baseUrl}}/foods/1
+Authorization: Bearer {{token}}

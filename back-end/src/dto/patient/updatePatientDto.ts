@@ -1,20 +1,5 @@
 import type { BiologicalSex } from "../../../generated/prisma/client";
+import type { CreatePatientDto } from "./createPatientDto";
 
 // Dados para atualizar um paciente; todos os campos são opcionais
-export interface UpdatePatientDto {
-  name?: string;
-
-  birthDate?: Date;
-
-  gender?: string;
-
-  biologicalSex?: BiologicalSex;
-
-  // CPF com ou sem máscara (000.000.000-00 ou 00000000000)
-  cpf?: string;
-
-  phone?: string;
-
-  // Paciente em acompanhamento; se não informado no cadastro, assume true (Ativo)
-  active?: boolean;
-}
+export type UpdatePatientDto = Partial<CreatePatientDto>

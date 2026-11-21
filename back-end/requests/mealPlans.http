@@ -1,0 +1,70 @@
+# Testes das rotas de Planos Alimentares (extensão REST Client do VS Code)
+# Rode o seed antes (npx prisma db seed): pacientes, alimentos e modelos vêm dele.
+
+@baseUrl = http://localhost:8888
+@contentType = application/json
+
+### Faz login para obter o token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "nutri",
+  "password": "nutri123"
+}
+
+###
+@token = {{login.response.body.token}}
+
+### Atribui um plano ao paciente 1 copiando as refeições do modelo 1 -> 201
+# @name createPlan
+POST {{baseUrl}}/meal-plans
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "patientId": 1,
+  "dietId": 1,
+  "name": "Plano de teste",
+  "startDate": "2026-11-15T00:00:00.000Z"
+}
+
+###
+@planId = {{createPlan.response.body.id}}
+
+### Lista os planos do paciente 1, do mais recente para o mais antigo -> 200
+GET {{baseUrl}}/meal-plans/patient/1
+Authorization: Bearer {{token}}
+
+### Busca o plano pelo id -> 200 (com totais calculados)
+GET {{baseUrl}}/meal-plans/{{planId}}
+Authorization: Bearer {{token}}
+
+### Ajusta o plano: novo nome e refeições substituídas -> 200
+PUT {{baseUrl}}/meal-plans/{{planId}}
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Plano de teste (ajustado)",
+  "meals": [
+    { "name": "Almoço", "time": "12:00", "items": [ { "foodId": 1, "quantity": 120 }, { "foodId": 3, "quantity": 150 } ] }
+  ]
+}
+
+### Paciente inexistente -> 404
+POST {{baseUrl}}/meal-plans
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "patientId": 999999,
+  "name": "Inválido",
+  "startDate": "2026-11-15T00:00:00.000Z",
+  "meals": []
+}
+
+### Exclui o plano -> 204
+DELETE {{baseUrl}}/meal-plans/{{planId}}
+Authorization: Bearer {{token}}

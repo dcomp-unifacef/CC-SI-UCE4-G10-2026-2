@@ -1,0 +1,70 @@
+# Testes das rotas de Modelos de Dieta (extensão REST Client do VS Code)
+# Rode o seed antes (npx prisma db seed): os alimentos 1 a 15 vêm dele.
+
+@baseUrl = http://localhost:8888
+@contentType = application/json
+
+### Faz login para obter o token
+# @name login
+POST {{baseUrl}}/auth/login
+Content-Type: {{contentType}}
+
+{
+  "login": "nutri",
+  "password": "nutri123"
+}
+
+###
+@token = {{login.response.body.token}}
+
+### Cadastra um modelo com refeições -> 201 (com totais calculados)
+# @name createDiet
+POST {{baseUrl}}/diets
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Low carb",
+  "notes": "Exemplo de modelo criado pelo REST Client.",
+  "meals": [
+    { "name": "Café da manhã", "time": "07:00", "items": [ { "foodId": 4, "quantity": 100 } ] },
+    { "name": "Almoço", "time": "12:00", "items": [ { "foodId": 3, "quantity": 150 }, { "foodId": 11, "quantity": 100 } ] }
+  ]
+}
+
+###
+@dietId = {{createDiet.response.body.id}}
+
+### Lista todos os modelos -> 200
+GET {{baseUrl}}/diets
+Authorization: Bearer {{token}}
+
+### Busca o modelo pelo id -> 200
+GET {{baseUrl}}/diets/{{dietId}}
+Authorization: Bearer {{token}}
+
+### Atualiza o nome e substitui as refeições -> 200
+PUT {{baseUrl}}/diets/{{dietId}}
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Low carb (revisado)",
+  "meals": [
+    { "name": "Almoço", "time": "12:30", "items": [ { "foodId": 12, "quantity": 120 } ] }
+  ]
+}
+
+### Horário inválido -> 400
+POST {{baseUrl}}/diets
+Authorization: Bearer {{token}}
+Content-Type: {{contentType}}
+
+{
+  "name": "Inválido",
+  "meals": [ { "name": "Ceia", "time": "25:00", "items": [] } ]
+}
+
+### Exclui o modelo -> 204
+DELETE {{baseUrl}}/diets/{{dietId}}
+Authorization: Bearer {{token}}
