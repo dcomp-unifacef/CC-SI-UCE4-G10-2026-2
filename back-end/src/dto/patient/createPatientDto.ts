@@ -15,4 +15,7 @@ export interface CreatePatientDto {
   cpf: string;
 
   phone: string;
+
+  // Paciente em acompanhamento; se não informado no cadastro, assume true (Ativo)
+  active?: boolean;
 }

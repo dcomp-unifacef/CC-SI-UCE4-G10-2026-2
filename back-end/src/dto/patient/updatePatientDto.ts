@@ -14,4 +14,7 @@ export interface UpdatePatientDto {
   cpf?: string;
 
   phone?: string;
+
+  // Paciente em acompanhamento; se não informado no cadastro, assume true (Ativo)
+  active?: boolean;
 }
