@@ -2,11 +2,11 @@
 @baseUrl = http://localhost:8888
 @contentType = application/json
 
-### Faz login para obter o token (as demais rotas exigem "Authorization:
-Bearer <token>")
+### Faz login para obter o token (as demais rotas exigem "Authorization: Bearer <token>")
 # @name login
 POST {{baseUrl}}/auth/login
 Content-Type: {{contentType}}
+
 {
 "login": "nutri",
 "password": "nutri123"

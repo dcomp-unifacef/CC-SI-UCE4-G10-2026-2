@@ -55,7 +55,7 @@ export function Login() {
           <ul className="list-unstyled mb-0">
             <li><Icon name="check" />IMC, água, TMB e GET calculados na hora da avaliação</li>
             <li><Icon name="check" />Planos alimentares a partir de modelos, com totais em tempo real</li>
-            <li><Icon name="check" />PDF do plano pronto para enviar ao paciente</li>
+            <li><Icon name="check" />Prontuário com todo o histórico de avaliações e planos</li>
           </ul>
         </div>
 
@@ -121,9 +121,6 @@ export function Login() {
             </button>
           </fieldset>
 
-          <p className="small text-secondary mt-4 mb-0">
-            Protótipo com dados fictícios. Não cadastre informações clínicas reais.
-          </p>
         </form>
       </section>
     </div>
